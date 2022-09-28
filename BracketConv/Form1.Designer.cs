@@ -136,7 +136,7 @@
             this.btnConvert.Name = "btnConvert";
             this.btnConvert.Size = new System.Drawing.Size(81, 26);
             this.btnConvert.TabIndex = 10;
-            this.btnConvert.Text = "変換";
+            this.btnConvert.Text = "置換";
             this.btnConvert.UseVisualStyleBackColor = true;
             this.btnConvert.Click += new System.EventHandler(this.btnConvert_Click);
             // 

@@ -15,6 +15,7 @@ namespace BracketConv
 {
     public partial class FormMain : Form
     {
+        private int FileNum = 0; // ファイルの数
         private int ErrorNum = 0; // エラーの数
         private IniFile iniFile = new IniFile(); // INIファイル
 
@@ -66,26 +67,42 @@ namespace BracketConv
             }
         }
         
-        // 変換処理
-        private void btnConvert_Click(object sender, EventArgs e)
+        // 置換
+        private async void btnConvert_Click(object sender, EventArgs e)
         {
             textStatus.Text = "処理を開始します。";
+            FileNum = 0;
             ErrorNum = 0;
 
+            // 非同期処理で置換を実行
+            await Task.Run(new Action(Convert));
+
+            textStatus.Text = "";
+            MessageBox.Show(
+                FileNum.ToString() + "個のファイルを処理しました。\n" + 
+                "エラー件数: " + ErrorNum.ToString());
+        }
+
+        // 括弧の置換
+        private void Convert()
+        {
             // ファイル一覧を取得
-            var di = new System.IO.DirectoryInfo(textInputFolder.Text);
+            var di = new DirectoryInfo(textInputFolder.Text);
             var option = checkSubFolder.Checked ? // サブフォルダも？
                 SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
             FileInfo[] files = di.GetFiles(textFilter.Text, option);
+            FileNum = files.Length;
 
             // 変数名一覧を取得
             string[] varNames = textVarNames.Text.Split(
                 new[] { Environment.NewLine }, StringSplitOptions.None);
-            
+
             // 各々のファイルについて
-            foreach(var file in files)
+            foreach (var file in files)
             {
-                textStatus.Text = "処理中: " + file.Name;
+                this.BeginInvoke((Action)(() => {
+                    textStatus.Text = "処理中: " + file.Name;
+                }));
 
                 // 入力ファイル
                 var sr = new StreamReader(
@@ -114,10 +131,6 @@ namespace BracketConv
                 sw.Close();
                 sr.Close();
             }
-            textStatus.Text = "";
-            MessageBox.Show(
-                files.Length.ToString() + "個のファイルを処理しました。\n" + 
-                "エラー件数: " + ErrorNum.ToString());
         }
 
         // 括弧の置換 (1行の文字列, 括弧の前の変数名)
